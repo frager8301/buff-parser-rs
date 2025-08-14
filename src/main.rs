@@ -5,10 +5,19 @@ use rust_translate::translate;
 use serde_json::Value;
 use std::fs::File;
 use std::io::BufWriter;
-use std::io::{self, BufRead, BufReader, Read, Write};
+use std::io::{self, BufRead, BufReader, Read, Write, stdout};
 use std::path::Path;
 use tokio::time::{Duration, sleep};
-use winconsole::console::{clear, set_title};
+use crossterm::{execute, terminal::{Clear, ClearType}};
+
+fn clear() {
+    execute!(stdout(), Clear(ClearType::All)).unwrap();
+}
+
+fn set_title(title: &str) {
+    print!("\x1b]0;{}\x07", title);
+    stdout().flush().unwrap();
+}
 
 const CONCURRENT_REQUESTS: usize = 1000;
 const REQUEST_DELAY: u64 = 500;
@@ -46,8 +55,8 @@ async fn translate_with_retry(text: &str, target_lang: &str) -> String {
 
 #[tokio::main]
 async fn main() {
-    set_title("BUFF-PARSER-RS").unwrap();
-    clear().unwrap();
+    set_title("BUFF-PARSER-RS");
+    clear();
 
     let parse_all_buffs = loop {
         println!(
@@ -58,7 +67,7 @@ async fn main() {
         io::stdin()
             .read_line(&mut choice)
             .expect("Failed to read choice");
-        clear().unwrap();
+        clear();
 
         match choice.trim() {
             "1" => break true,
@@ -82,7 +91,7 @@ async fn main() {
         io::stdin()
             .read_line(&mut input_ids)
             .expect("Error reading input");
-        clear().unwrap();
+        clear();
 
         manual_ids = input_ids
             .trim()
@@ -101,7 +110,7 @@ async fn main() {
     io::stdin()
         .read_line(&mut input)
         .expect("Error reading input");
-    clear().unwrap();
+    clear();
 
     let filenames: Vec<String> = input
         .trim()
@@ -176,7 +185,7 @@ async fn main() {
                             .read_line(&mut target_lang)
                             .expect("Failed to read language input.");
                         let target_lang = target_lang.trim().to_lowercase();
-                        clear().unwrap();
+                        clear();
 
                         let mut translation_futures = Vec::new();
 
